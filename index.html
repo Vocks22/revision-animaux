@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les familles d'animaux</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    color: #333;
+  }
+
+  h1 {
+    color: white;
+    font-size: 2em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .subtitle {
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 20px;
+    font-size: 1.1em;
+  }
+
+  .mode-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .mode-btn {
+    padding: 10px 20px;
+    border: 2px solid white;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .mode-btn:hover, .mode-btn.active {
+    background: white;
+    color: #764ba2;
+  }
+
+  .score-bar {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    background: rgba(255,255,255,0.2);
+    padding: 10px 25px;
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1em;
+  }
+
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 700px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .question-image {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    border: 3px solid #eee;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .question-image:hover { transform: scale(1.05); }
+
+  .question {
+    font-size: 1.3em;
+    margin-bottom: 8px;
+    color: #555;
+  }
+
+  .question-highlight {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #764ba2;
+    margin-bottom: 25px;
+  }
+
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .choice-btn {
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    background: #fafafa;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .choice-btn:hover {
+    border-color: #764ba2;
+    background: #f3edff;
+    transform: scale(1.03);
+  }
+
+  .choice-btn.correct {
+    border-color: #4caf50;
+    background: #e8f5e9;
+    color: #2e7d32;
+    animation: pulse 0.5s;
+  }
+
+  .choice-btn.wrong {
+    border-color: #f44336;
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  .choice-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid #eee;
+  }
+
+  .choice-label {
+    font-size: 1.1em;
+    font-weight: 600;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .feedback {
+    font-size: 1.5em;
+    font-weight: 700;
+    margin: 15px 0;
+    min-height: 40px;
+  }
+
+  .feedback.good { color: #4caf50; }
+  .feedback.bad { color: #f44336; }
+
+  .next-btn {
+    padding: 12px 35px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: none;
+  }
+
+  .next-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+  }
+
+  .learn-table {
+    width: 100%;
+    max-width: 900px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+
+  .learn-table th {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 14px;
+    font-size: 1.1em;
+  }
+
+  .learn-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 1em;
+    vertical-align: middle;
+  }
+
+  .learn-table tr:last-child td { border-bottom: none; }
+  .learn-table tr:hover td { background: #f3edff; }
+
+  .learn-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .learn-cell:hover .learn-img { transform: scale(1.1); }
+
+  .learn-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #eee;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .learn-name { font-weight: 500; }
+
+  /* Modal / Popup */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeInModal 0.3s ease;
+  }
+
+  @keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal {
+    background: white;
+    border-radius: 24px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    position: relative;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 1.8em;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+  }
+
+  .modal-close:hover { color: #333; }
+
+  .modal-emoji {
+    font-size: 50px;
+    text-align: center;
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .modal-title {
+    text-align: center;
+    font-size: 1.6em;
+    font-weight: 700;
+    color: #764ba2;
+    margin-bottom: 20px;
+  }
+
+  .modal-family {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .modal-member {
+    text-align: center;
+    flex: 1;
+    min-width: 100px;
+    max-width: 140px;
+  }
+
+  .modal-member img {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 14px;
+    border: 3px solid #eee;
+    margin-bottom: 6px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .modal-member-role {
+    font-size: 0.8em;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .modal-member-name {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .modal-description {
+    background: #f8f5ff;
+    border-radius: 14px;
+    padding: 18px;
+    font-size: 1.1em;
+    line-height: 1.7;
+    color: #444;
+    margin-top: 5px;
+  }
+
+  .modal-description p {
+    margin-bottom: 8px;
+  }
+
+  .modal-description p:last-child { margin-bottom: 0; }
+
+  .modal-fun {
+    background: #fff8e1;
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 15px;
+    font-size: 1.05em;
+    color: #f57f17;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  /* Results */
+  .results { text-align: center; }
+  .results .big-emoji { font-size: 80px; display: block; margin-bottom: 15px; }
+  .results h2 { font-size: 1.8em; margin-bottom: 10px; color: #764ba2; }
+  .results p { font-size: 1.2em; color: #666; margin-bottom: 20px; }
+
+  .restart-btn {
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.15em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .restart-btn:hover { transform: scale(1.05); }
+
+  @media (max-width: 600px) {
+    .choices { grid-template-columns: 1fr; }
+    h1 { font-size: 1.5em; }
+    .card { padding: 20px; }
+    .question-highlight { font-size: 1.4em; }
+    .choice-btn { flex-direction: row; padding: 8px 12px; }
+    .choice-img { width: 50px; height: 50px; }
+    .learn-table { font-size: 0.9em; }
+    .learn-img { width: 36px; height: 36px; }
+    .modal { padding: 20px; }
+    .modal-member img { width: 80px; height: 80px; }
+    .modal-family { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Les familles d'animaux</h1>
+<p class="subtitle">Apprends le mâle, la femelle et le petit !</p>
+
+<div class="mode-bar">
+  <button class="mode-btn active" onclick="setMode('learn')">Apprendre</button>
+  <button class="mode-btn" onclick="setMode('quiz-femelle')">Quiz Femelle</button>
+  <button class="mode-btn" onclick="setMode('quiz-petit')">Quiz Petit</button>
+  <button class="mode-btn" onclick="setMode('quiz-male')">Quiz Mâle</button>
+  <button class="mode-btn" onclick="setMode('quiz-mix')">Quiz Mélange</button>
+</div>
+
+<div id="score-bar" class="score-bar" style="display:none">
+  <span id="score-text"></span>
+  <span id="progress-text"></span>
+</div>
+
+<div id="content"></div>
+<div id="modal-container"></div>
+
+<script>
+const animaux = [
+  {
+    male: "Le cheval", femelle: "La jument", petit: "Le poulain", emoji: "🐴",
+    images: { male: "images/cheval.jpg", femelle: "images/jument.jpg", petit: "images/poulain.jpg" },
+    description: "Le cheval est un grand animal très élégant. La maman s'appelle la jument et le papa le cheval. Leur bébé, c'est le poulain ! Il se met debout quelques minutes après sa naissance.",
+    funFact: "Le poulain peut courir le jour même où il naît !"
+  },
+  {
+    male: "Le jars", femelle: "L'oie", petit: "L'oison", emoji: "🪿",
+    images: { male: "images/jars.jpg", femelle: "images/oie.jpg", petit: "images/oison.jpg" },
+    description: "L'oie est un gros oiseau qui vit souvent à la ferme. Le papa s'appelle le jars et la maman l'oie. Leur petit bébé tout jaune et duveteux, c'est l'oison !",
+    funFact: "Les oies sont de super gardiennes : elles crient très fort quand un inconnu arrive !"
+  },
+  {
+    male: "Le cerf", femelle: "La biche", petit: "Le faon", emoji: "🦌",
+    images: { male: "images/cerf.jpg", femelle: "images/biche.jpg", petit: "images/faon.jpg" },
+    description: "Le cerf est un animal majestueux de la forêt avec de grands bois sur la tête. La maman s'appelle la biche, elle est plus petite et n'a pas de bois. Leur bébé, le faon, a de jolies taches blanches sur le dos.",
+    funFact: "Les bois du cerf tombent chaque année et repoussent en plus grand !"
+  },
+  {
+    male: "Le lapin", femelle: "La lapine", petit: "Le lapereau", emoji: "🐰",
+    images: { male: "images/lapin.jpg", femelle: "images/lapine.jpg", petit: "images/lapereau.jpg" },
+    description: "Le lapin est un petit animal tout doux avec de grandes oreilles. La maman, c'est la lapine, et leur bébé s'appelle le lapereau. Il naît tout petit, sans poils et les yeux fermés !",
+    funFact: "La lapine peut avoir jusqu'à 12 lapereaux d'un coup !"
+  },
+  {
+    male: "Le bélier", femelle: "La brebis", petit: "L'agneau", emoji: "🐑",
+    images: { male: "images/belier.jpg", femelle: "images/brebis.jpg", petit: "images/agneau.jpg" },
+    description: "Le bélier est le papa mouton. Il a souvent de grandes cornes enroulées. La maman s'appelle la brebis et donne de la laine bien chaude. Leur bébé, l'agneau, est tout mignon avec sa petite laine bouclée.",
+    funFact: "L'agneau reconnaît la voix de sa maman parmi des centaines de brebis !"
+  },
+  {
+    male: "Le bouc", femelle: "La chèvre", petit: "Le chevreau", emoji: "🐐",
+    images: { male: "images/bouc.jpg", femelle: "images/chevre.jpg", petit: "images/chevreau.jpg" },
+    description: "Le bouc est le papa chèvre. Il a une petite barbiche sous le menton ! La maman, c'est la chèvre, qui donne du bon lait pour faire du fromage. Leur bébé s'appelle le chevreau, il adore sauter partout !",
+    funFact: "Les chèvres sont de vraies grimpeuses : elles peuvent monter sur des rochers très raides !"
+  },
+  {
+    male: "Le taureau", femelle: "La vache", petit: "Le veau", emoji: "🐂",
+    images: { male: "images/taureau.jpg", femelle: "images/vache.jpg", petit: "images/veau.jpg" },
+    description: "Le taureau est le papa, il est très fort et musclé. La maman, c'est la vache, qui nous donne du lait tous les jours. Leur bébé s'appelle le veau. Il tète le lait de sa maman.",
+    funFact: "Une vache boit environ une baignoire entière d'eau par jour !"
+  },
+  {
+    male: "Le verrat", femelle: "La truie", petit: "Le porcelet", emoji: "🐷",
+    images: { male: "images/verrat.jpg", femelle: "images/truie.jpg", petit: "images/porcelet.jpg" },
+    description: "Le verrat est le papa cochon et la truie est la maman. Ce sont des animaux très intelligents ! Leur bébé s'appelle le porcelet, il est tout rose et tout petit.",
+    funFact: "Les cochons sont aussi intelligents que des chiens et adorent jouer !"
+  },
+  {
+    male: "Le sanglier", femelle: "La laie", petit: "Le marcassin", emoji: "🐗",
+    images: { male: "images/sanglier.jpg", femelle: "images/laie.jpg", petit: "images/marcassin.jpg" },
+    description: "Le sanglier est le cousin sauvage du cochon ! Il vit dans la forêt. La maman s'appelle la laie. Leur bébé, le marcassin, a de jolies rayures sur le dos pour se cacher dans les feuilles.",
+    funFact: "Les marcassins perdent leurs rayures en grandissant !"
+  },
+  {
+    male: "Le coq", femelle: "La poule", petit: "Le poussin", emoji: "🐓",
+    images: { male: "images/coq.jpg", femelle: "images/poule.jpg", petit: "images/poussin.jpg" },
+    description: "Le coq est le papa, il chante « cocorico » très tôt le matin ! La maman, c'est la poule, qui pond des œufs et les couve bien au chaud. Le bébé, le poussin, sort de l'œuf tout jaune et tout duveteux.",
+    funFact: "Le poussin commence à entendre sa maman à travers la coquille avant de naître !"
+  },
+  {
+    male: "Le canard", femelle: "La cane", petit: "Le caneton", emoji: "🦆",
+    images: { male: "images/canard.jpg", femelle: "images/cane.jpg", petit: "images/caneton.jpg" },
+    description: "Le canard est souvent très coloré avec sa tête verte brillante. La maman s'appelle la cane, elle est plus discrète avec ses plumes marron. Leur bébé, le caneton, sait nager dès le premier jour !",
+    funFact: "Les canetons suivent toujours leur maman en file indienne !"
+  },
+  {
+    male: "Le loup", femelle: "La louve", petit: "Le louveteau", emoji: "🐺",
+    images: { male: "images/loup.jpg", femelle: "images/louve.jpg", petit: "images/louveteau.jpg" },
+    description: "Le loup vit en meute dans la forêt. La maman s'appelle la louve, elle protège ses petits dans une tanière. Le bébé, le louveteau, apprend à hurler avec toute la famille !",
+    funFact: "Les loups hurlent ensemble pour se dire où ils sont et rester unis !"
+  },
+  {
+    male: "Le renard", femelle: "La renarde", petit: "Le renardeau", emoji: "🦊",
+    images: { male: "images/renard.jpg", femelle: "images/renarde.jpg", petit: "images/renardeau.jpg" },
+    description: "Le renard est un petit animal rusé avec un beau pelage roux et une grande queue touffue. La maman s'appelle la renarde. Leur bébé, le renardeau, naît avec une fourrure toute sombre qui devient rousse en grandissant.",
+    funFact: "Le renard peut entendre une souris sous la neige à plusieurs mètres !"
+  },
+  {
+    male: "L'âne", femelle: "L'ânesse", petit: "L'ânon", emoji: "🫏",
+    images: { male: "images/ane.jpg", femelle: "images/anesse.jpg", petit: "images/anon.jpg" },
+    description: "L'âne est un animal très gentil et courageux avec de grandes oreilles. La maman s'appelle l'ânesse. Leur bébé, l'ânon, est tout petit et très mignon. L'âne est le cousin du cheval !",
+    funFact: "L'âne a une super mémoire : il peut se souvenir d'un chemin pendant 25 ans !"
+  }
+];
+
+// Index pour retrouver l'image et la famille d'un nom d'animal
+const nameToImage = {};
+const nameToFamily = {};
+animaux.forEach(a => {
+  nameToImage[a.male] = a.images.male;
+  nameToImage[a.femelle] = a.images.femelle;
+  nameToImage[a.petit] = a.images.petit;
+  nameToFamily[a.male] = a;
+  nameToFamily[a.femelle] = a;
+  nameToFamily[a.petit] = a;
+});
+
+let mode = 'learn';
+let currentQ = 0;
+let score = 0;
+let questions = [];
+
+function openModal(animalIndex) {
+  const a = animaux[animalIndex];
+  const html = `<div class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <span class="modal-emoji">${a.emoji}</span>
+      <div class="modal-title">La famille ${a.male.replace(/^(Le |L')/i, '').toLowerCase()}</div>
+      <div class="modal-family">
+        <div class="modal-member">
+          <img src="${a.images.male}" alt="${a.male}">
+          <div class="modal-member-role">Papa</div>
+          <div class="modal-member-name">${a.male}</div>
+        </div>
+        <div class="modal-member">
+          <img src="${a.images.femelle}" alt="${a.femelle}">
+          <div class="modal-member-role">Maman</div>
+          <div class="modal-member-name">${a.femelle}</div>
+        </div>
+        <div class="modal-member">
+          <img src="${a.images.petit}" alt="${a.petit}">
+          <div class="modal-member-role">Bébé</div>
+          <div class="modal-member-name">${a.petit}</div>
+        </div>
+      </div>
+      <div class="modal-description">
+        <p>${a.description}</p>
+      </div>
+      <div class="modal-fun">💡 Le savais-tu ? ${a.funFact}</div>
+    </div>
+  </div>`;
+  document.getElementById('modal-container').innerHTML = html;
+}
+
+function openModalByName(name) {
+  const family = nameToFamily[name];
+  if (family) {
+    const idx = animaux.indexOf(family);
+    openModal(idx);
+  }
+}
+
+function closeModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('modal-container').innerHTML = '';
+}
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-btn').forEach((b, i) => {
+    const modes = ['learn', 'quiz-femelle', 'quiz-petit', 'quiz-male', 'quiz-mix'];
+    b.classList.toggle('active', modes[i] === m);
+  });
+
+  if (m === 'learn') {
+    document.getElementById('score-bar').style.display = 'none';
+    showLearnMode();
+  } else {
+    currentQ = 0;
+    score = 0;
+    questions = generateQuestions(m);
+    document.getElementById('score-bar').style.display = 'flex';
+    showQuestion();
+  }
+}
+
+function showLearnMode() {
+  let html = '<table class="learn-table">';
+  html += '<tr><th>Mâle</th><th>Femelle</th><th>Petit</th></tr>';
+  animaux.forEach((a, idx) => {
+    html += `<tr>
+      <td><div class="learn-cell" onclick="openModal(${idx})"><img class="learn-img" src="${a.images.male}" alt="${a.male}"><span class="learn-name">${a.male}</span></div></td>
+      <td><div class="learn-cell" onclick="openModal(${idx})"><img class="learn-img" src="${a.images.femelle}" alt="${a.femelle}"><span class="learn-name">${a.femelle}</span></div></td>
+      <td><div class="learn-cell" onclick="openModal(${idx})"><img class="learn-img" src="${a.images.petit}" alt="${a.petit}"><span class="learn-name">${a.petit}</span></div></td>
+    </tr>`;
+  });
+  html += '</table>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateQuestions(mode) {
+  const qs = [];
+  const shuffled = shuffle(animaux);
+
+  shuffled.forEach(animal => {
+    let type;
+    if (mode === 'quiz-femelle') type = 'femelle';
+    else if (mode === 'quiz-petit') type = 'petit';
+    else if (mode === 'quiz-male') type = 'male';
+    else type = ['femelle', 'petit', 'male'][Math.floor(Math.random() * 3)];
+
+    let questionText, given, givenLabel, givenImage, answer, answerPool;
+
+    if (type === 'femelle') {
+      given = animal.male;
+      givenLabel = 'Le mâle';
+      givenImage = animal.images.male;
+      questionText = 'Comment s\'appelle la femelle ?';
+      answer = animal.femelle;
+      answerPool = animaux.map(a => a.femelle);
+    } else if (type === 'petit') {
+      given = animal.male;
+      givenLabel = 'Le mâle';
+      givenImage = animal.images.male;
+      questionText = 'Comment s\'appelle le petit ?';
+      answer = animal.petit;
+      answerPool = animaux.map(a => a.petit);
+    } else {
+      given = animal.femelle;
+      givenLabel = 'La femelle';
+      givenImage = animal.images.femelle;
+      questionText = 'Comment s\'appelle le mâle ?';
+      answer = animal.male;
+      answerPool = animaux.map(a => a.male);
+    }
+
+    let wrongs = shuffle(answerPool.filter(a => a !== answer)).slice(0, 3);
+    let choices = shuffle([answer, ...wrongs]);
+
+    qs.push({ animal, type, given, givenLabel, givenImage, questionText, answer, choices, emoji: animal.emoji });
+  });
+
+  return qs;
+}
+
+function showQuestion() {
+  if (currentQ >= questions.length) {
+    showResults();
+    return;
+  }
+
+  const q = questions[currentQ];
+  updateScore();
+
+  const animalIdx = animaux.indexOf(q.animal);
+
+  let html = `<div class="card" id="quiz-card">
+    <img class="question-image" src="${q.givenImage}" alt="${q.given}" onclick="openModal(${animalIdx})">
+    <p class="question">${q.givenLabel} est : <strong>${q.given}</strong></p>
+    <p class="question-highlight">${q.questionText}</p>
+    <div class="choices">`;
+
+  q.choices.forEach((c, i) => {
+    const choiceImg = nameToImage[c] || '';
+    html += `<button class="choice-btn" id="choice-${i}" onclick="checkAnswer(${i})">
+      <img class="choice-img" src="${choiceImg}" alt="${c}">
+      <span class="choice-label">${c}</span>
+    </button>`;
+  });
+
+  html += `</div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Suivant →</button>
+  </div>`;
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function checkAnswer(idx) {
+  const q = questions[currentQ];
+  const btns = document.querySelectorAll('.choice-btn');
+  const feedback = document.getElementById('feedback');
+  const nextBtn = document.getElementById('next-btn');
+
+  btns.forEach(b => b.style.pointerEvents = 'none');
+
+  const correctIdx = q.choices.indexOf(q.answer);
+
+  if (q.choices[idx] === q.answer) {
+    btns[idx].classList.add('correct');
+    feedback.textContent = 'Bravo ! 🎉';
+    feedback.className = 'feedback good';
+    score++;
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[correctIdx].classList.add('correct');
+    feedback.textContent = `C'était : ${q.answer}`;
+    feedback.className = 'feedback bad';
+  }
+
+  nextBtn.style.display = 'inline-block';
+  updateScore();
+}
+
+function nextQuestion() {
+  currentQ++;
+  showQuestion();
+}
+
+function updateScore() {
+  document.getElementById('score-text').textContent = `Score : ${score}/${questions.length}`;
+  document.getElementById('progress-text').textContent = `Question ${Math.min(currentQ + 1, questions.length)}/${questions.length}`;
+}
+
+function showResults() {
+  const pct = Math.round((score / questions.length) * 100);
+  let emoji, msg;
+  if (pct === 100) { emoji = '🏆'; msg = 'Parfait ! Tu es un champion !'; }
+  else if (pct >= 80) { emoji = '🌟'; msg = 'Excellent ! Presque parfait !'; }
+  else if (pct >= 60) { emoji = '👍'; msg = 'Bien joué ! Continue comme ça !'; }
+  else if (pct >= 40) { emoji = '💪'; msg = 'Pas mal ! Encore un peu d\'effort !'; }
+  else { emoji = '📚'; msg = 'Révise le tableau et réessaie !'; }
+
+  document.getElementById('content').innerHTML = `
+    <div class="card results">
+      <span class="big-emoji">${emoji}</span>
+      <h2>${score} / ${questions.length}</h2>
+      <p>${msg}</p>
+      <button class="restart-btn" onclick="setMode(mode)">Recommencer</button>
+    </div>`;
+}
+
+// Fermer la modale avec Echap
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// Start in learn mode
+showLearnMode();
+</script>
+</body>
+</html>
